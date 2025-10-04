@@ -36,3 +36,19 @@
     transform: rotate(360deg);
   }
 }
+
+@font-face {
+  font-family: NotoK;
+  src: url(../public/fonts/NotoKufiArabic-Medium.ttf);
+  font-weight: 600;
+}
+@font-face {
+  font-family: NotoK;
+  src: url(../public/fonts/NotoKufiArabic-ExtraBold.ttf);
+  font-weight: 900;
+}
+@font-face {
+  font-family: NotoK;
+  src: url(../public/fonts/NotoKufiArabic-Light.ttf);
+  font-weight: 400;
+}

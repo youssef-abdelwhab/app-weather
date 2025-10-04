@@ -1,0 +1,11 @@
+    {
+        "name":"Bouir",
+        "welcome": "Welcome to my weather app",
+        "city": "City",
+        "temp": "Temperature: {{value}} °C",
+        "min":"Min",
+        "max":"Max",
+        "lang":"language",
+        "weather": "Weather: {{desc}}",
+        "changeLang": "Change language"
+    }
