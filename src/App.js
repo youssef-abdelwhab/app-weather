@@ -15,11 +15,17 @@ import Button from '@mui/material/Button';
 import CircularProgress from "@mui/material/CircularProgress";
 
 
+// reduxe
+import { useDispatch , useSelector } from 'react-redux';
+
+import {fetchWeather} from "../src/features/counter/ApiSlice"
+ 
+
 // hock 
 import { useEffect ,useState } from 'react';
 
 
-import axios from 'axios';
+
 import moment from 'moment/moment';
 import "moment/min/locales"
 import { useTranslation } from "react-i18next";
@@ -29,16 +35,20 @@ import { useTranslation } from "react-i18next";
 
 
 
-let cancelAxios = null
+
 function App() {
 
+  const Dispatch = useDispatch()
+  const weather = useSelector((state)=>{
+      return state.WeatherApi
+  })
 
   const { t, i18n } = useTranslation();
 
   const [lang ,setlang]=useState(i18n.language || "en")
   const [darkMode, setDarkMode] = useState(false);
 
-  const [loading , setloading]=useState(false)
+
 
   const[dataTime ,setDatatime]=useState(null)
 
@@ -54,19 +64,6 @@ function App() {
     setcity(JSON.parse(event.target.value));
   }
 
-
-
-
-
-  const [FormData , setFormData] = useState({
-    temperature: null,
-    name:"",
-    HighTemperature:null,
-    MinimumTemperature:null,
-    description:"",
-    icon:"",
-  
-  })
 
   const Theme = createTheme({
        palette: {
@@ -103,39 +100,15 @@ function App() {
       }
   })
 
-
-
-  useEffect(()=>{
+useEffect(()=>{
+    const controller = new AbortController();
     if (!city.lat || !city.lon) return;
-    setDatatime(moment().format("Do MMMM  YYYY"))
-     setloading(true); 
-      axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=610641093df9da32c4c682967f0f2311&lang=${lang}`,{
-        cancelToken:new axios.CancelToken((c)=>{
-            cancelAxios = c
-        })
-      })
-      .then(function(response){
-        setFormData({
-            temperature : Math.round(response.data.main.temp - 273.15) ,
-            name : response.data.name,
-            HighTemperature : Math.round(response.data.main.temp_max - 273.15),
-            MinimumTemperature : Math.round(response.data.main.temp_min - 273.15),
-            description : response.data.weather[0].description,
-            icon :`https://openweathermap.org/img/wn/${response.data.weather[0].icon}@2x.png` 
-        })
-      })
-      .catch(function(error){
-        console.log(error)
-      })
-    .finally(()=>{
-      setloading(false); 
-    })
-
-      return ()=>{
-        if (cancelAxios) cancelAxios();
-      }
-
-  },[lang,city])
+      setDatatime(moment().format("Do MMMM  YYYY"))
+     Dispatch(fetchWeather({lon : city.lon , lat : city.lat , lang :lang ,controller}))
+       return () => {
+    controller.abort(); // إلغاء الطلب السابق عند التغيير
+  };
+},[lang,city])
 
   return (
     <div  >
@@ -157,11 +130,12 @@ function App() {
               <div style={{display:"flex" , alignItems:"flex-end"}}>
 
                   <Typography variant="h3" sx={{marginLeft:"15px" , marginRight:"15px", marginBottom:"5px"}} gutterBottom>
-                     {FormData.name}
+                     {weather.weather.name}
                   </Typography>
 
                   <Typography variant="h6" sx={{marginBottom:"15px"}} gutterBottom>
                             {dataTime}
+
                   </Typography>
 
               </div>
@@ -171,23 +145,23 @@ function App() {
               <div style={{display:"flex" , justifyContent:"space-around"}}>
 
                   <div style={{display:"flex" ,justifyContent:"center",flexDirection:"column", width:"50%"}}>
-                    {loading ? (<CircularProgress  size={60} />): (
+                    {weather.isLodeing ? (<CircularProgress  size={60} />): (
                     <>
                         <div style={{display:"flex" ,alignItems:"center"}} >
 
                           <Typography variant="h1" sx={{marginLeft:"15px" ,textAlign:"end" ,marginBottom:"3px"}} gutterBottom>
-                            {FormData.temperature}   
+                            {weather.weather.temperature}   
                           </Typography>
 
                         </div>
 
                         <Typography variant="h5" sx={{marginLeft:"15px" }} gutterBottom>
-                          {FormData.description}       
+                          {weather.weather.description}       
                         </Typography>
 
                         <div>
                           <h5 style={{ fontFamily:"NotoK" ,fontWeight:"600", fontSize:"20"}}>
-                            {t("max")}: {FormData.HighTemperature} || {t("min")} : {FormData.MinimumTemperature}  
+                            {t("max")}: {weather.weather.HighTemperature} || {t("min")} : {weather.weather.MinimumTemperature}  
                           </h5>
                         </div>
                       </> 
@@ -196,9 +170,9 @@ function App() {
 
                   </div>
 
-                  {loading ? (<CircularProgress  size={60} />): (
+                  {weather.isLodeing ? (<CircularProgress  size={60} />): (
                   <div style={{width:"50%"}}>
-                    <img style={{width:"100%"}} src={FormData.icon}/> 
+                    <img style={{width:"100%"}} src={weather.weather.icon}/> 
                   </div>
                   )}
 
