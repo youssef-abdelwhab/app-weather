@@ -18,7 +18,6 @@ import axios from "axios";
 const weatherApiSlice = createSlice({
     name:"weatherApi",
     initialState:{
-        result:"empty",
         weather:{},
         isLodeing:false
     },
